@@ -250,7 +250,7 @@ root
  |-- url: string (nullable = true)
 ```
 
-# Results
+# Constructor Standings
 ```txt
 ===== Tabla: constructors standings (LND) =====
 Filas: 69   |   Columnas: 3

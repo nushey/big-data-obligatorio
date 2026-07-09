@@ -67,6 +67,59 @@
 | SprintShootout | struct | Fecha/hora del "sprint shootout". Nomenclatura usada solo en 2023. |
 | url | string | Link a la página de Wikipedia de la carrera. Descartable en refinamiento. |
 
+# Results
+
+| Columna | Tipo de dato | Significado |
+|---|---|---|
+| season | string | Año de la temporada. |
+| round | string | Ronda/fecha dentro de la temporada. |
+| raceName | string | Nombre del Gran Premio. Redundante con `races`, descartable en refinamiento. |
+| date | string | Fecha de la carrera. Redundante con `races`, descartable en refinamiento. |
+| time | string | Hora de largada (UTC). Redundante con `races`, descartable en refinamiento. |
+| url | string | Link a Wikipedia de la carrera. Descartable en refinamiento. |
+| Circuit | struct | Objeto anidado con la info del circuito, redundante con la tabla `circuits`. Se descarta en refinamiento, dejando solo `circuitId` como FK (extraído de `Circuit.circuitId`). |
+| Circuit.circuitId | string | Identificador del circuito (clave natural, FK a `circuits`). |
+| Circuit.circuitName | string | Nombre del circuito. Redundante con `circuits`, descartable. |
+| Circuit.url | string | Link a Wikipedia del circuito. Descartable. |
+| Circuit.Location | struct | Ubicación geográfica del circuito. Redundante con `circuits`, descartable. |
+| Circuit.Location.country | string | País del circuito. Redundante con `circuits`, descartable. |
+| Circuit.Location.locality | string | Ciudad/localidad del circuito. Redundante con `circuits`, descartable. |
+| Circuit.Location.lat | string | Latitud del circuito. Redundante con `circuits`, descartable. |
+| Circuit.Location.long | string | Longitud del circuito. Redundante con `circuits`, descartable. |
+| Results | array\<struct\> | Arreglo con el resultado de cada piloto en la carrera. Se explota (`explode`) en refinamiento para obtener una fila por resultado (season, round, driver). |
+| Results.grid | string | Posición de largada. |
+| Results.laps | string | Cantidad de vueltas completadas. |
+| Results.number | string | Número de auto utilizado por el piloto en esa carrera. |
+| Results.points | string | Puntos obtenidos en la carrera. |
+| Results.position | string | Posición final de llegada. Nulo en caso de DNF. |
+| Results.positionText | string | Representación textual de la posición final (puede diferir de `position` en casos de DNF/descalificación, donde toma valores no numéricos). |
+| Results.status | string | Descripción textual del estado final (ej. `"Finished"`, `"Accident"`, `"+1 Lap"`). **No es un `statusId`**: viene como texto libre, no como clave foránea numérica a la tabla `status`. |
+| Results.Driver | struct | Objeto anidado con la info del piloto, redundante con la tabla `drivers`. Se descarta en refinamiento, dejando solo `driverId` como FK. |
+| Results.Driver.driverId | string | Identificador del piloto (clave natural, FK a `drivers`). |
+| Results.Driver.code | string | Código de 3 letras del piloto. Redundante con `drivers`, descartable. |
+| Results.Driver.permanentNumber | string | Número permanente del piloto. Redundante con `drivers`, descartable. |
+| Results.Driver.givenName | string | Nombre de pila. Redundante con `drivers`, descartable. |
+| Results.Driver.familyName | string | Apellido. Redundante con `drivers`, descartable. |
+| Results.Driver.dateOfBirth | string | Fecha de nacimiento. Redundante con `drivers`, descartable. |
+| Results.Driver.nationality | string | Nacionalidad. Redundante con `drivers`, descartable. |
+| Results.Driver.url | string | Link a Wikipedia. Descartable. |
+| Results.Constructor | struct | Objeto anidado con la info del constructor, redundante con la tabla `constructors`. Se descarta en refinamiento, dejando solo `constructorId` como FK. |
+| Results.Constructor.constructorId | string | Identificador del constructor (clave natural, FK a `constructors`). |
+| Results.Constructor.name | string | Nombre del constructor. Redundante con `constructors`, descartable. |
+| Results.Constructor.nationality | string | Nacionalidad del constructor. Redundante con `constructors`, descartable. |
+| Results.Constructor.url | string | Link a Wikipedia. Descartable. |
+| Results.Time | struct | Tiempo total de carrera del piloto. Nulo si no completó la carrera o quedó fuera de vuelta del líder. |
+| Results.Time.time | string | Tiempo total en formato texto (ej. `"+1.234"` o tiempo absoluto del ganador). |
+| Results.Time.millis | string | Tiempo total en milisegundos. |
+| Results.FastestLap | struct | Info de la vuelta más rápida del piloto en la carrera. Nulo en temporadas antiguas donde no se registra o si el piloto no completó vueltas cronometradas. |
+| Results.FastestLap.rank | string | Ranking de esa vuelta rápida respecto al resto de pilotos en la carrera. |
+| Results.FastestLap.lap | string | Número de vuelta en la que se registró el tiempo más rápido. |
+| Results.FastestLap.Time | struct | Tiempo de la vuelta más rápida. |
+| Results.FastestLap.Time.time | string | Tiempo de la vuelta más rápida en formato texto. |
+| Results.FastestLap.AverageSpeed | struct | Velocidad promedio en la vuelta más rápida. |
+| Results.FastestLap.AverageSpeed.speed | string | Valor de la velocidad promedio. |
+| Results.FastestLap.AverageSpeed.units | string | Unidad de la velocidad (ej. `"kph"`). |
+
 # Constructor Standings
 
 | Columna | Tipo de dato | Significado |
