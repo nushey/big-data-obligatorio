@@ -1,0 +1,70 @@
+erDiagram
+    dim_driver ||--o{ fact_results : "driverId"
+    dim_constructor ||--o{ fact_results : "constructorId"
+    dim_status ||--o{ fact_results : "statusId"
+    dim_race ||--o{ fact_results : "raceId"
+    dim_circuit ||--o{ dim_race : "circuitId"
+    dim_constructor ||--o{ fact_constructor_standings : "constructorId"
+
+    fact_results {
+        string resultId PK
+        string raceId FK
+        string driverId FK
+        string constructorId FK
+        int statusId FK
+        int grid
+        int position
+        string positionText
+        double points
+        int laps
+    }
+
+    fact_constructor_standings {
+        string standingId PK
+        string constructorId FK
+        int season
+        int totalRounds
+        double points
+        int position
+        string positionText
+        int wins
+    }
+
+    dim_driver {
+        string driverId PK
+        string code
+        string givenName
+        string familyName
+        string permanentNumber
+        date dateOfBirth
+        string nationality
+    }
+
+    dim_constructor {
+        string constructorId PK
+        string name
+        string nationality
+    }
+
+    dim_circuit {
+        string circuitId PK
+        string circuitName
+        string country
+        string locality
+        double latitude
+        double longitude
+    }
+
+    dim_status {
+        int statusId PK
+        string status
+    }
+
+    dim_race {
+        string raceId PK
+        int season
+        int round
+        string raceName
+        date date
+        string circuitId FK
+    }

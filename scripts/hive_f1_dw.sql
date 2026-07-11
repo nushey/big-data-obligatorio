@@ -26,7 +26,7 @@ CREATE EXTERNAL TABLE dim_driver (
   nationality     STRING
 )
 STORED AS PARQUET
-LOCATION '/user/ort/ort/MDL/dim_driver';
+LOCATION 'ort/MDL/dim_driver';
 
 DROP TABLE IF EXISTS dim_constructor;
 CREATE EXTERNAL TABLE dim_constructor (
@@ -35,7 +35,7 @@ CREATE EXTERNAL TABLE dim_constructor (
   nationality   STRING
 )
 STORED AS PARQUET
-LOCATION '/user/ort/ort/MDL/dim_constructor';
+LOCATION 'ort/MDL/dim_constructor';
 
 DROP TABLE IF EXISTS dim_circuit;
 CREATE EXTERNAL TABLE dim_circuit (
@@ -47,7 +47,7 @@ CREATE EXTERNAL TABLE dim_circuit (
   longitude   DOUBLE
 )
 STORED AS PARQUET
-LOCATION '/user/ort/ort/MDL/dim_circuit';
+LOCATION 'ort/MDL/dim_circuit';
 
 DROP TABLE IF EXISTS dim_status;
 CREATE EXTERNAL TABLE dim_status (
@@ -55,7 +55,7 @@ CREATE EXTERNAL TABLE dim_status (
   status   STRING
 )
 STORED AS PARQUET
-LOCATION '/user/ort/ort/MDL/dim_status';
+LOCATION 'ort/MDL/dim_status';
 
 DROP TABLE IF EXISTS dim_race;
 CREATE EXTERNAL TABLE dim_race (
@@ -67,7 +67,7 @@ CREATE EXTERNAL TABLE dim_race (
   circuitId STRING
 )
 STORED AS PARQUET
-LOCATION '/user/ort/ort/MDL/dim_race';
+LOCATION 'ort/MDL/dim_race';
 
 -- =====================================================================
 -- HECHOS
@@ -87,7 +87,7 @@ CREATE EXTERNAL TABLE fact_results (
   laps          INT
 )
 STORED AS PARQUET
-LOCATION '/user/ort/ort/MDL/fact_results';
+LOCATION 'ort/MDL/fact_results';
 
 DROP TABLE IF EXISTS fact_constructor_standings;
 CREATE EXTERNAL TABLE fact_constructor_standings (
@@ -101,18 +101,4 @@ CREATE EXTERNAL TABLE fact_constructor_standings (
   wins          INT
 )
 STORED AS PARQUET
-LOCATION '/user/ort/ort/MDL/fact_constructor_standings';
-
--- =====================================================================
--- Verificación de conteos (esperado):
---   dim_driver 881, dim_constructor 214, dim_circuit 78, dim_status 136,
---   dim_race 503, fact_results 10550, fact_constructor_standings 276
--- =====================================================================
--- USE f1_dw;
--- SELECT 'dim_driver' AS t, COUNT(*) AS n FROM dim_driver
--- UNION ALL SELECT 'dim_constructor', COUNT(*) FROM dim_constructor
--- UNION ALL SELECT 'dim_circuit', COUNT(*) FROM dim_circuit
--- UNION ALL SELECT 'dim_status', COUNT(*) FROM dim_status
--- UNION ALL SELECT 'dim_race', COUNT(*) FROM dim_race
--- UNION ALL SELECT 'fact_results', COUNT(*) FROM fact_results
--- UNION ALL SELECT 'fact_constructor_standings', COUNT(*) FROM fact_constructor_standings;
+LOCATION 'ort/MDL/fact_constructor_standings';
