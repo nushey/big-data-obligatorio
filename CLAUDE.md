@@ -52,17 +52,17 @@ Debe existir un documento escrito de criterios de uso por zona (entregable) y re
 - Claves sintéticas: `raceId` = hash determinístico de `(season, round)`; `resultId` = `sha2(concat_ws("_", season, round, driverId, number), 256)`; `standingId` = `sha2(concat_ws("_", season, constructorId), 256)`.
 - `status.count` se descarta en el refinamiento (no se guarda como `count_api`): es acumulado global de la API y no se usa (la tasa de DNF se recalcula desde `/RFN`). `dim_status` = `statusId` + `status`.
 - `fact_constructor_standings`: `round` → `totalRounds` (última ronda = total de carreras de la temporada), `season`/`totalRounds` como dims degeneradas, **sin `raceId`**; FK única `constructorId` → `dim_constructor`. En `fact_results` el `statusId` (int) se resuelve por JOIN de texto `results.status = dim_status.status`.
-- Modelo: Estrella. Hechos: `fact_results`, `fact_constructor_standings`. Dimensiones: `dim_driver`, `dim_constructor`, `dim_circuit`, `dim_status`, `dim_race`. **`/MDL` construido y verificado** (2026-07-10): dims 881/214/78/136/503, `fact_results` 10.550, `fact_constructor_standings` 276.
+- Modelo: Estrella. Hechos: `fact_results`, `fact_constructor_standings`. Dimensiones: `dim_driver`, `dim_constructor`, `dim_circuit`, `dim_status`, `dim_race`. `/MDL` construido y verificado: dims 881/214/78/136/503, `fact_results` 10.550, `fact_constructor_standings` 276.
 - Diagrama del esquema del modelo requerido como entregable (draw.io, Mermaid o Excalidraw).
-- Hive: database nuevo (ej. `f1_dw`), tablas externas sobre `/MDL`.
+- Hive: database `f1_dw` creado y validado con `hive_f1_dw.sql` + `hive_validacion.sql` ejecutados en Hue. Tablas externas sobre `/MDL` con `LOCATION` absoluta `ort/MDL/...` (home HDFS = `ort`; las rutas relativas `ort/{ZONA}` de los notebooks resuelven ahí — es lo esperado). Conteos, tipos e integridad referencial verificados (0 huérfanos).
 - Visualizaciones en Jupyter (notebook de preguntas): 2 en total — folium (mapa de circuitos por tasa de DNF) y seaborn/matplotlib (heatmap podios o barras top 10).
 - Superset: preguntas 3 y 5, resultados en `/ANL`, un dashboard con al menos un chart por pregunta.
 
 ## Las 5 preguntas
 
-1. Top 10 pilotos con más victorias (desde 2000). JOIN `results`–`drivers`, filtro posición 1, conteo por piloto.
+1. Top 10 pilotos con más victorias (desde 2000). Respondida: JOIN `fact_results`–`dim_driver`, filtro `position = 1`, empates en el corte con `RANK()` (11 filas: triple empate en pos. 9 con 11 victorias; lidera Hamilton con 105).
 2. Tasa de DNF por circuito. `results` + `races` + `circuits`; DNF por criterio propio (ver hallazgos), no por `status.count`.
-3. Pilotos con más ganancia promedio de posiciones (grid → meta). **Pendiente de confirmar**: el dataset real no tiene `positionOrder` (ver hallazgos); definir si se usa `position` (excluyendo DNF, donde es null) u otro criterio antes de implementar.
+3. Pilotos con más ganancia promedio de posiciones (grid → meta). Respondida: ganancia = `grid - position` (positivo = posiciones ganadas); solo clasificados (`positionText RLIKE '^[0-9]+$'`, excluye R/D/W), sin largadas desde boxes (`grid > 0`), mínimo 20 carreras válidas, empates con `RANK()`. Lidera Jos Verstappen (6.48 en 29 carreras); ranking dominado por pilotos de equipos de fondo de parrilla (sesgo estructural documentado).
 4. Combinación piloto–constructor más exitosa en podios. Agrupar `results` por `driverId` + `constructorId`, posiciones 1-3, contar.
 5. Escudería con más DNF en últimos 10 años y su impacto en posición final. `results` + `races` para DNFs por año/escudería, JOIN con `constructor_standings` para comparar impacto.
 
@@ -81,7 +81,9 @@ Debe existir un documento escrito de criterios de uso por zona (entregable) y re
 - `status.count` es acumulado histórico global, no filtrado; no usar para la pregunta de DNF por circuito.
 - Criterio DNF: todo status que no sea "Finished" ni "+N Laps" (lista de `statusId` a documentar).
 - `results.Results.status` es texto libre (ej. `"Finished"`, `"Accident"`), **no es un `statusId`**: no hay clave foránea numérica directa a `status`. La FK en `fact_results` a `dim_status` requiere resolver el join por coincidencia de texto/descripción, no por igualdad de ID.
-- `position` es null en DNF. `positionText` puede tomar valores no numéricos en DNF/descalificación: no usar para aritmética. **No existe columna `positionOrder`** en el dataset real (a diferencia de los CSV clásicos de Ergast) — corregir cualquier referencia previa a `positionOrder` (afecta directamente a la pregunta 3).
+- `position` nunca es null (verificado contra `/MDL`): viene siempre poblada como orden de clasificación completo de la carrera, equivalente al `positionOrder` de los CSV clásicos de Ergast (esa columna no existe en jolpica). La distinción clasificado/no clasificado está en `positionText`: numérico = clasificado (coincide con `position`); `R` = abandono (DNF), `D` = descalificado (DSQ), `W` = retiro previo a largar (DNS). No usar `positionText` para aritmética.
+- `grid = 0` es la convención de la API para largada desde boxes: no es posición de parrilla real, excluir de cálculos de ganancia de posiciones.
+- Desactualizados respecto a estos hallazgos (pendiente de ajustar): en `refinamiento-doc.md` §3.2 las filas `position`/`positionText` de la Colección 7 (afirman nulls en DNF), la fila `raceId` faltante en la Colección 8 y la nota de `grid = 0`; en el notebook de refinamiento, el comentario de la celda `status` (menciona `count_api`, que no se guarda) y el de `constructor_standings` (presenta `raceId` como FK a `dim_race` cuando es solo trazabilidad).
 - Relevo de pilotos/autos compartidos: fenómeno anterior a 1960, fuera del recorte 2000–2025, pero la clave sintética se genera igual en `/RFN`.
 - Conteos post-`explode` de `results` y `constructor_standings` no confirmados aún: recalcular durante el refinamiento (ver Dataset).
 
