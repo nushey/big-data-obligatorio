@@ -69,13 +69,3 @@ WHERE c.constructorId IS NULL;
 SELECT COUNT(*) AS orfanos_race_circuit
 FROM dim_race r LEFT JOIN dim_circuit c ON r.circuitId = c.circuitId
 WHERE c.circuitId IS NULL;
-
--- 6. Smoke test end-to-end: join hecho-dimensión con agregación
---    (anticipo de la pregunta 1; valida que el modelo consulta bien desde Hive)
-SELECT d.givenName, d.familyName, COUNT(*) AS victorias
-FROM fact_results f
-JOIN dim_driver d ON f.driverId = d.driverId
-WHERE f.position = 1
-GROUP BY d.givenName, d.familyName
-ORDER BY victorias DESC
-LIMIT 10;
