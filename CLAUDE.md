@@ -49,8 +49,10 @@ Debe existir un documento escrito de criterios de uso por zona (entregable) y re
 
 - Ingesta: script Python (`extract_f1_data.py`, entregable) → repo git → NiFi (`InvokeHTTP` → `UpdateAttribute` → `PutHDFS` a `/LND`).
 - Recorte temporal aplicado en refinamiento, no en ingesta.
-- Claves sintéticas: `raceId` = hash determinístico de `(season, round)`; `resultId` = `sha2(concat_ws("_", season, round, driverId, number), 256)`.
-- Modelo: Estrella. Hechos: `fact_results`, `fact_constructor_standings`. Dimensiones: `dim_driver`, `dim_constructor`, `dim_circuit`, `dim_status`, `dim_race`.
+- Claves sintéticas: `raceId` = hash determinístico de `(season, round)`; `resultId` = `sha2(concat_ws("_", season, round, driverId, number), 256)`; `standingId` = `sha2(concat_ws("_", season, constructorId), 256)`.
+- `status.count` se descarta en el refinamiento (no se guarda como `count_api`): es acumulado global de la API y no se usa (la tasa de DNF se recalcula desde `/RFN`). `dim_status` = `statusId` + `status`.
+- `fact_constructor_standings`: `round` → `totalRounds` (última ronda = total de carreras de la temporada), `season`/`totalRounds` como dims degeneradas, **sin `raceId`**; FK única `constructorId` → `dim_constructor`. En `fact_results` el `statusId` (int) se resuelve por JOIN de texto `results.status = dim_status.status`.
+- Modelo: Estrella. Hechos: `fact_results`, `fact_constructor_standings`. Dimensiones: `dim_driver`, `dim_constructor`, `dim_circuit`, `dim_status`, `dim_race`. **`/MDL` construido y verificado** (2026-07-10): dims 881/214/78/136/503, `fact_results` 10.550, `fact_constructor_standings` 276.
 - Diagrama del esquema del modelo requerido como entregable (draw.io, Mermaid o Excalidraw).
 - Hive: database nuevo (ej. `f1_dw`), tablas externas sobre `/MDL`.
 - Visualizaciones en Jupyter (notebook de preguntas): 2 en total — folium (mapa de circuitos por tasa de DNF) y seaborn/matplotlib (heatmap podios o barras top 10).
