@@ -23,7 +23,7 @@ CREATE EXTERNAL TABLE anl_pregunta3 (
   piloto            STRING
 )
 STORED AS PARQUET
-LOCATION '/user/ort/ort/ANL/pregunta3';
+LOCATION 'ort/ANL/pregunta3';
 
 -- ---------------------------------------------------------------------
 -- Pregunta 5: escuderia con mas DNF (2016-2025) e impacto en posicion.
@@ -31,6 +31,8 @@ LOCATION '/user/ort/ort/ANL/pregunta3';
 -- NOTA: confirmar nombres/orden/tipos de columnas contra el printSchema()
 -- del DataFrame que escribe el companiero antes de correr esto.
 -- ---------------------------------------------------------------------
+USE f1_dw;
+
 DROP TABLE IF EXISTS anl_pregunta5;
 CREATE EXTERNAL TABLE anl_pregunta5 (
   constructor        STRING,
@@ -41,7 +43,7 @@ CREATE EXTERNAL TABLE anl_pregunta5 (
   avg_final_position DOUBLE
 )
 STORED AS PARQUET
-LOCATION '/user/ort/ort/ANL/pregunta5';
+LOCATION 'ort/ANL/pregunta5_dnf_escuderias';
 
 -- =====================================================================
 -- Verificacion rapida
